@@ -112,14 +112,11 @@ class CampaignMetricsAPIView(APIView):
 
 class CampaignADMetricsAPIView(APIView):
     """
-    Retrieve campaign metric within a specified date range.
+    Retrieve campaign ads metric.
 
+    :param metric (str): The metric to aggregate for ads associated with campaign.
 
-    :param start_date (str): Start date of the date range in 'YYYY-MM-DD' format.
-    :param end_date (str): End date of the date range in 'YYYY-MM-DD' format.
-    :param metric (str): The metric to aggregate for ads associated with campaigns.
-
-    :returns: A JSON response containing campaign IDs and aggregated metric values.
+    :returns: A JSON response containing ad id and metric value per each.
 
     Example:
         GET /campaigns/1/metrics/?metric=clicks

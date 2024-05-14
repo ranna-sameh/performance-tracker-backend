@@ -1,6 +1,5 @@
 from rest_framework import generics
 from rest_framework.views import APIView
-from rest_framework.pagination import PageNumberPagination
 from .models import FbCampaign
 from .serializers import FbCampaignWithAdsBrief
 from ad.models import Ad

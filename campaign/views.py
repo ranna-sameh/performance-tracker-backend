@@ -41,9 +41,19 @@ class FbCampaignListView(generics.ListAPIView):
 
 
 class FbCampaignDetailView(APIView):
+    """
+    A view for handling Facebook campaign by id.
+
+    Example:
+        To retrieve a Facebook campaign of id =1 and ads ordered by 'clicks', make a GET request to:
+        /campaigns/1/?ordering=clicks
+        /campaigns/1?ordering=clicks&page=2&page_size=2
+    """
+
     def get(self, request, id):
         """
-        Retrieve details of a Facebook campaign and associated ads.
+        Retrieve details of a Facebook campaign and associated ads. It supports optional ordering based on
+        query parameters in addition to pagination.
 
         :param request: The request object.
         :param id: The ID of the Facebook campaign to retrieve.

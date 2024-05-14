@@ -1,11 +1,14 @@
 from rest_framework import generics
+from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from .models import FbCampaign
-from .serializers import FbCampaignSerializer,FbCampaignWithAdsBrief
-from rest_framework.exceptions import ValidationError
+from .serializers import FbCampaignWithAdsBrief
+from ad.models import Ad
+from ad.serializers import AdSerializer
+from .mixins import OrderingMixin
 
 
-class CampaignPagination(PageNumberPagination):
+class CustomPagination(PageNumberPagination):
     """
     Set default in case no page size is sent
     """
@@ -26,32 +29,38 @@ class FbCampaignListView(generics.ListAPIView):
     """
     queryset = FbCampaign.objects.all()
     serializer_class = FbCampaignWithAdsBrief
-    pagination_class = CampaignPagination
-
-    def _validate_ordering(self, ordering: str) -> bool:
-        """
-        Validate that the provided ordering attribute is a valid field
-        for ordering in the FbCampaign model
-
-        :param ordering: The ordering attribute to validate.
-
-        :return: True if the ordering attribute is valid; False otherwise.
-        """
-        # List of valid fields for ordering
-        valid_fields = [field.name for field in FbCampaign._meta.get_fields()]
-        # If the ordering attribute contains a hyphen for descending sorting, remove it
-        if '-' in ordering:
-            ordering = ordering.replace('-', '')
-        return ordering in valid_fields
+    pagination_class = CustomPagination
 
     def get_queryset(self):
         queryset = super().get_queryset()
-        ordering = self.request.query_params.get('ordering', None)
-        if ordering:
-            is_valid = self._validate_ordering(ordering)
-            if is_valid:
-                queryset = queryset.order_by(ordering)
-            else:
-                raise ValidationError({'error': 'Invalid ordering attribute.'})
+        # Apply ordering to campaigns queryset
+        queryset = OrderingMixin.get_ordered_queryset(
+            self, queryset, FbCampaign)
 
         return queryset
+
+
+class FbCampaignDetailView(APIView):
+    def get(self, request, id):
+        """
+        Retrieve details of a Facebook campaign and associated ads.
+
+        :param request: The request object.
+        :param id: The ID of the Facebook campaign to retrieve.
+
+        :return: Response containing details of the Facebook campaign and associated ads.
+        """
+        campaign = FbCampaign.objects.get(pk=id)
+        ads = Ad.objects.filter(fb_campaign_id=id)
+
+        # Apply ordering to ads queryset
+        ads = OrderingMixin.get_ordered_queryset(self, ads, Ad)
+
+        # Pagination on ads
+        paginator = CustomPagination()
+        paginated_ads = paginator.paginate_queryset(ads, request)
+
+        campaign_serializer = FbCampaignWithAdsBrief(campaign)
+        ad_serializer = AdSerializer(paginated_ads, many=True)
+        return paginator.get_paginated_response({"campaign": campaign_serializer.data,
+                                                 "ads":  ad_serializer.data})

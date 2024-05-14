@@ -21,3 +21,7 @@ class FbCampaign(models.Model):
     def total_ads_number(self):
         # Count the total number of ads related to this campaign
         return self.ad_set.count()
+    
+    @property
+    def ads(self):
+        return self.ad_set.all()

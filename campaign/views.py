@@ -1,4 +1,7 @@
-from rest_framework import generics
+from .serializers import CampaignMetricsSerializer
+from django.db.models import Sum
+from rest_framework import status, generics
+from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import FbCampaign
 from .serializers import FbCampaignWithAdsBrief
@@ -7,6 +10,7 @@ from ad.serializers import AdSerializer
 from utils.mixins import OrderingMixin
 from utils.pagination import CustomPagination
 from rest_framework.exceptions import NotFound
+from django.core.exceptions import FieldError, ValidationError
 
 
 class FbCampaignListView(generics.ListAPIView):
@@ -69,3 +73,39 @@ class FbCampaignDetailView(APIView):
                                                     "ads":  ad_serializer.data})
         except FbCampaign.DoesNotExist:
             raise NotFound
+
+
+class CampaignMetricsAPIView(APIView):
+    """
+    Retrieve campaign metric within a specified date range.
+
+
+    :param start_date (str): Start date of the date range in 'YYYY-MM-DD' format.
+    :param end_date (str): End date of the date range in 'YYYY-MM-DD' format.
+    :param metric (str): The metric to aggregate for ads associated with campaigns.
+
+    :returns: A JSON response containing campaign IDs and aggregated metric values.
+
+    Example:
+        GET /campaign-metrics/?start_date=2024-01-01&end_date=2024-01-31&metric=clicks
+    """
+
+    def get(self, request):
+        start_date = request.query_params.get('start_date')
+        end_date = request.query_params.get('end_date')
+        metric = request.query_params.get('metric')
+
+        if not all([start_date, end_date, metric]):
+            return Response({'error': 'Missing parameters'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ads = Ad.objects.filter(
+                fb_campaign__start_date__gte=start_date, fb_campaign__end_date__lte=end_date)
+            ads = ads.values('fb_campaign_id').annotate(metric_sum=Sum(metric))
+        except FieldError:
+            return Response({'error': 'Invalid metric field'}, status=status.HTTP_400_BAD_REQUEST)
+        except ValidationError:
+            return Response({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = CampaignMetricsSerializer(ads, many=True)
+        return Response(serializer.data)

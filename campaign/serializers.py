@@ -21,3 +21,8 @@ class FbCampaignWithAdsBrief(FbCampaignSerializer):
 
     def get_total_ads_number(self, obj):
         return obj.total_ads_number
+
+
+class CampaignMetricsSerializer(serializers.Serializer):
+    fb_campaign_id = serializers.IntegerField()
+    metric_sum = serializers.FloatField()

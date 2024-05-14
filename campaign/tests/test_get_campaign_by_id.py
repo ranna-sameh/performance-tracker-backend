@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 from campaign.models import FbCampaign
 from ad.models import Ad
+from rest_framework import status
 
 
 class FbCampaignDetailViewTest(TestCase):
@@ -48,3 +49,8 @@ class FbCampaignDetailViewTest(TestCase):
         # Check if the ads are ordered by clicks in descending order
         self.assertEqual(ads_results[0]['clicks'], 50)
         self.assertEqual(ads_results[1]['clicks'], 30)
+
+    def test_get_campaign_detail_not_found(self):
+        url = self._get_url(12345)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

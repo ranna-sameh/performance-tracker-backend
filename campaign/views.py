@@ -1,12 +1,11 @@
-from .serializers import CampaignMetricsSerializer
+from .serializers import CampaignMetricsSerializer, FbCampaignWithAdsBrief
 from django.db.models import Sum
 from rest_framework import status, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import FbCampaign
-from .serializers import FbCampaignWithAdsBrief
 from ad.models import Ad
-from ad.serializers import AdSerializer
+from ad.serializers import AdSerializer, AdMetricsSerializer
 from utils.mixins import OrderingMixin
 from utils.pagination import CustomPagination
 from rest_framework.exceptions import NotFound
@@ -108,4 +107,32 @@ class CampaignMetricsAPIView(APIView):
             return Response({'error': 'Invalid date format'}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = CampaignMetricsSerializer(ads, many=True)
+        return Response(serializer.data)
+
+
+class CampaignADMetricsAPIView(APIView):
+    """
+    Retrieve campaign ads metric.
+
+    :param metric (str): The metric to aggregate for ads associated with campaign.
+
+    :returns: A JSON response containing ad id and metric value per each.
+
+    Example:
+        GET /campaigns/1/metrics/?metric=clicks
+    """
+
+    def get(self, request, id):
+        metric = request.query_params.get('metric', '')
+
+        # Validate if the metric is a valid field of the Ad model
+        if not hasattr(Ad, metric):
+            return Response({'error': 'Invalid metric'}, status=400)
+
+        # Retrieve ads for the given fb_campaign_id with only the specified metric
+        ads = Ad.objects.filter(fb_campaign_id=id)
+
+        serializer = AdMetricsSerializer(
+            ads, many=True, context={'metric': metric})
+
         return Response(serializer.data)

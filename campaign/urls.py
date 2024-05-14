@@ -1,5 +1,5 @@
 
-from .views import FbCampaignListView, FbCampaignDetailView, CampaignMetricsAPIView
+from .views import FbCampaignListView, FbCampaignDetailView, CampaignMetricsAPIView, CampaignADMetricsAPIView
 from django.urls import path
 
 urlpatterns = [
@@ -8,4 +8,6 @@ urlpatterns = [
          name='fb-campaign-details'),
     path('metrics/', CampaignMetricsAPIView.as_view(),
          name='campaign_metrics'),
+    path('<int:id>/metrics/', CampaignADMetricsAPIView.as_view(),
+         name='campaign_ads_metrics'),
 ]

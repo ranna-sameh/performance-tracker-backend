@@ -35,7 +35,7 @@ class FbCampaignListView(generics.ListAPIView):
         queryset = super().get_queryset()
         # Apply ordering to campaigns queryset
         queryset = OrderingMixin.get_ordered_queryset(
-            self, queryset, FbCampaign)
+            self.request, queryset, FbCampaign)
 
         return queryset
 
@@ -54,7 +54,7 @@ class FbCampaignDetailView(APIView):
         ads = Ad.objects.filter(fb_campaign_id=id)
 
         # Apply ordering to ads queryset
-        ads = OrderingMixin.get_ordered_queryset(self, ads, Ad)
+        ads = OrderingMixin.get_ordered_queryset(request, ads, Ad)
 
         # Pagination on ads
         paginator = CustomPagination()

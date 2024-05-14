@@ -24,16 +24,18 @@ class OrderingMixin:
     Mixin class to handle ordering logic for views.
     """
 
-    def get_ordered_queryset(self, queryset, model):
+    @staticmethod
+    def get_ordered_queryset(request, queryset, model):
         """
         Apply ordering to the queryset based on the request's query parameters.
 
+        :param request: The request object.
         :param queryset: The queryset to be ordered.
         :param model: The Django model.
 
         :return: The ordered queryset.
         """
-        ordering = self.request.query_params.get('ordering')
+        ordering = request.query_params.get('ordering')
         if ordering:
             is_valid = validate_ordering(model, ordering)
             if not is_valid:

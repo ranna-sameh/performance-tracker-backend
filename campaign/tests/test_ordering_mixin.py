@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.db import models
 from django.urls import reverse
-from campaign.mixins import OrderingMixin, validate_ordering
+from utils.mixins import OrderingMixin, validate_ordering
 from campaign.models import FbCampaign
 from rest_framework.exceptions import ValidationError
 from unittest.mock import MagicMock

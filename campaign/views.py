@@ -1,7 +1,7 @@
 from rest_framework import generics
 from rest_framework.pagination import PageNumberPagination
 from .models import FbCampaign
-from .serializers import FbCampaignSerializer
+from .serializers import FbCampaignSerializer,FbCampaignWithAdsBrief
 from rest_framework.exceptions import ValidationError
 
 
@@ -25,7 +25,7 @@ class FbCampaignListView(generics.ListAPIView):
         /campaigns/?ordering=start_date&page=2&page_size=2
     """
     queryset = FbCampaign.objects.all()
-    serializer_class = FbCampaignSerializer
+    serializer_class = FbCampaignWithAdsBrief
     pagination_class = CampaignPagination
 
     def _validate_ordering(self, ordering: str) -> bool:

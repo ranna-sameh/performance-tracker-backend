@@ -27,3 +27,15 @@ class AdListView(generics.ListAPIView):
             self.request, queryset, Ad)
 
         return queryset
+
+
+class AdDetailedView(generics.RetrieveAPIView):
+    """
+    A view for retrieving a single Facebook ad by its ID.
+
+    Example:
+        To retrieve a Facebook ad with ID 123, make a GET request to:
+        /ads/123/
+    """
+    queryset = Ad.objects.all()
+    serializer_class = AdSerializer

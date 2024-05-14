@@ -6,6 +6,7 @@ from ad.models import Ad
 from ad.serializers import AdSerializer
 from utils.mixins import OrderingMixin
 from utils.pagination import CustomPagination
+from rest_framework.exceptions import NotFound
 
 
 class FbCampaignListView(generics.ListAPIView):
@@ -51,17 +52,20 @@ class FbCampaignDetailView(APIView):
 
         :return: Response containing details of the Facebook campaign and associated ads.
         """
-        campaign = FbCampaign.objects.get(pk=id)
-        ads = Ad.objects.filter(fb_campaign_id=id)
+        try:
+            campaign = FbCampaign.objects.get(pk=id)
+            ads = Ad.objects.filter(fb_campaign_id=id)
 
-        # Apply ordering to ads queryset
-        ads = OrderingMixin.get_ordered_queryset(request, ads, Ad)
+            # Apply ordering to ads queryset
+            ads = OrderingMixin.get_ordered_queryset(request, ads, Ad)
 
-        # Pagination on ads
-        paginator = CustomPagination()
-        paginated_ads = paginator.paginate_queryset(ads, request)
+            # Pagination on ads
+            paginator = CustomPagination()
+            paginated_ads = paginator.paginate_queryset(ads, request)
 
-        campaign_serializer = FbCampaignWithAdsBrief(campaign)
-        ad_serializer = AdSerializer(paginated_ads, many=True)
-        return paginator.get_paginated_response({"campaign": campaign_serializer.data,
-                                                 "ads":  ad_serializer.data})
+            campaign_serializer = FbCampaignWithAdsBrief(campaign)
+            ad_serializer = AdSerializer(paginated_ads, many=True)
+            return paginator.get_paginated_response({"campaign": campaign_serializer.data,
+                                                    "ads":  ad_serializer.data})
+        except FbCampaign.DoesNotExist:
+            raise NotFound

@@ -100,7 +100,7 @@ class CampaignMetricsAPIView(APIView):
         try:
             ads = Ad.objects.filter(
                 fb_campaign__start_date__gte=start_date, fb_campaign__end_date__lte=end_date)
-            ads = ads.values('fb_campaign_id').annotate(metric_sum=Sum(metric))
+            ads = ads.values('fb_campaign_id').annotate(value=Sum(metric))
         except FieldError:
             return Response({'error': 'Invalid metric field'}, status=status.HTTP_400_BAD_REQUEST)
         except ValidationError:

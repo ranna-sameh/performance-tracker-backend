@@ -66,6 +66,12 @@ class FbCampaignDetailView(APIView):
             campaign = FbCampaign.objects.get(pk=id)
             ads = Ad.objects.filter(fb_campaign_id=id)
 
+            # Check if 'search_id_value' parameter is present in the query params
+            search_id_value = self.request.query_params.get(
+                'search_id_value', None)
+            if search_id_value:
+                ads = ads.filter(id__contains=search_id_value)
+
             # Apply ordering to ads queryset
             ads = OrderingMixin.get_ordered_queryset(request, ads, Ad)
 

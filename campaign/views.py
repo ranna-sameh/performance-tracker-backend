@@ -28,6 +28,13 @@ class FbCampaignListView(generics.ListAPIView):
 
     def get_queryset(self):
         queryset = super().get_queryset()
+
+        # Check if 'search_id_value' parameter is present in the query params
+        search_id_value = self.request.query_params.get(
+            'search_id_value', None)
+        if search_id_value:
+            queryset = queryset.filter(id__contains=search_id_value)
+
         # Apply ordering to campaigns queryset
         queryset = OrderingMixin.get_ordered_queryset(
             self.request, queryset, FbCampaign)

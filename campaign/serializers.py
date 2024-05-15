@@ -24,5 +24,5 @@ class FbCampaignWithAdsBrief(FbCampaignSerializer):
 
 
 class CampaignMetricsSerializer(serializers.Serializer):
-    fb_campaign_id = serializers.IntegerField()
-    metric_sum = serializers.FloatField()
+    name = serializers.IntegerField(source='fb_campaign_id')
+    value = serializers.FloatField()
